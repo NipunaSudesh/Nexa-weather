@@ -19,10 +19,6 @@ const filePath = path.join(
   "cities.json"
 );
 
-/**
- * GET
- * Return all saved cities
- */
 export async function GET() {
   try {
     const file = await fs.readFile(filePath, "utf-8");
@@ -43,10 +39,6 @@ export async function GET() {
   }
 }
 
-/**
- * POST
- * Add a new city
- */
 export async function POST(request) {
   try {
     const newCity = await request.json();
@@ -69,14 +61,13 @@ export async function POST(request) {
 
     const data = JSON.parse(file);
 
-    /**
-     * Check duplicate city
-     */
-    const exists = data.List.some(
-      (city) =>
-        String(city.CityCode).trim() ===
-        String(newCity.CityCode).trim()
-    );
+const exists = data.List.some(
+  (city) =>
+    String(city.CityCode).trim() ===
+      String(newCity.CityCode).trim() ||
+    city.CityName.toLowerCase().trim() ===
+      newCity.CityName.toLowerCase().trim()
+);
 
     if (exists) {
       return NextResponse.json(
@@ -89,30 +80,21 @@ export async function POST(request) {
       );
     }
 
-    /**
-     * Add city
-     */
-    data.List.push({
-      CityCode: String(newCity.CityCode),
-      CityName: newCity.CityName,
-      Temp: String(newCity.Temp ?? "0"),
-      Status: newCity.Status ?? "Unknown",
-    });
+data.List.push({
+  CityCode: String(newCity.CityCode),
+  CityName: newCity.CityName,
+  Country: newCity.Country ?? "LK",
+  Temp: String(newCity.Temp ?? "0"),
+  Status: newCity.Status ?? "Unknown",
+  Latitude: newCity.Latitude,
+  Longitude: newCity.Longitude,
+});
 
-    /**
-     * Save cities.json
-     */
     await fs.writeFile(
       filePath,
       JSON.stringify(data, null, 2),
       "utf-8"
     );
-
-    /**
-     * VERY IMPORTANT
-     * Weather data depends on the city list.
-     * Remove old cached weather data.
-     */
     clearAllCache();
 
     return NextResponse.json({
@@ -132,11 +114,6 @@ export async function POST(request) {
     );
   }
 }
-
-/**
- * DELETE
- * Remove a city
- */
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(
@@ -171,9 +148,7 @@ export async function DELETE(request) {
     const data = JSON.parse(file);
 
 
-    /**
-     * Check whether city exists
-     */
+
     const cityExists = data.List.some(
       (city) =>
         String(city.CityCode).trim() ===
@@ -203,27 +178,21 @@ export async function DELETE(request) {
       );
     }
 
-    /**
-     * Remove city
-     */
+
     data.List = data.List.filter(
       (city) =>
         String(city.CityCode).trim() !==
         String(cityCode).trim()
     );
 
-    /**
-     * Save updated cities.json
-     */
+
     await fs.writeFile(
       filePath,
       JSON.stringify(data, null, 2),
       "utf-8"
     );
 
-    /**
-     * Clear weather cache
-     */
+
     clearAllCache();
 
     console.log(

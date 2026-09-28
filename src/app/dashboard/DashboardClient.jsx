@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Footer from "@/components/Footer";
 import TemperatureChart from "@/components/TemperatureChart";
 import AddCity from "@/components/AddCity";
+
 export default function Dashboard() {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -39,7 +39,17 @@ export async function GET(request) {
     }
 
     const locations = await geoResponse.json();
+const normalizedQuery = city.trim().toLowerCase();
 
+locations.sort((a, b) => {
+  const aName = String(a.name || "").toLowerCase();
+  const bName = String(b.name || "").toLowerCase();
+
+  const aExact = aName === normalizedQuery ? 1 : 0;
+  const bExact = bName === normalizedQuery ? 1 : 0;
+
+  return bExact - aExact;
+});
     if (!locations.length) {
       return NextResponse.json(
         { error: "City not found" },
@@ -62,8 +72,8 @@ export async function GET(request) {
         const weather = await weatherResponse.json();
 
         return {
-          CityCode: String(weather.id),
-          CityName: weather.name,
+        CityCode: `${location.lat.toFixed(6)}_${location.lon.toFixed(6)}`,
+         CityName: location.name,
           Country: weather.sys?.country || location.country,
           Temp: Number(weather.main?.temp || 0).toFixed(1),
           Status: weather.weather?.[0]?.main || "Unknown",

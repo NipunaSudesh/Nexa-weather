@@ -18,7 +18,6 @@ const filePath = path.join(
 
 export async function GET() {
   try {
-
     const processedCacheKey = "processed-weather-output";
 
     const processedCache = getCache(
@@ -42,12 +41,16 @@ export async function GET() {
     );
 
     const citiesData = JSON.parse(file);
+
     const cityCodes = citiesData.List
       .map((city) => ({
         id: String(city.CityCode).trim(),
         name: city.CityName,
+        latitude: city.Latitude,
+        longitude: city.Longitude,
       }))
       .slice(0, 15);
+
     const results = await Promise.all(
       cityCodes.map(async (city) => {
         const cacheKey = `raw-weather-${city.id}`;
@@ -59,11 +62,26 @@ export async function GET() {
         if (cached.hit) {
           data = cached.data;
         } else {
-          const url =
-            `https://api.openweathermap.org/data/2.5/weather` +
-            `?id=${city.id}` +
-            `&appid=${process.env.OPENWEATHER_API_KEY}` +
-            `&units=metric`;
+          let url;
+
+          if (
+            city.latitude !== undefined &&
+            city.longitude !== undefined
+          ) {
+            url =
+              `https://api.openweathermap.org/data/2.5/weather` +
+              `?lat=${city.latitude}` +
+              `&lon=${city.longitude}` +
+              `&appid=${process.env.OPENWEATHER_API_KEY}` +
+              `&units=metric`;
+          } else {
+
+            url =
+              `https://api.openweathermap.org/data/2.5/weather` +
+              `?id=${city.id}` +
+              `&appid=${process.env.OPENWEATHER_API_KEY}` +
+              `&units=metric`;
+          }
 
           const response = await fetch(url);
 
@@ -109,7 +127,10 @@ export async function GET() {
 
         return {
           cityCode: city.id,
-          city: data.name,
+
+          // Use saved city name for searched cities
+          city: city.name,
+
           country: data.sys.country,
 
           temperature: data.main.temp,
@@ -120,6 +141,7 @@ export async function GET() {
           visibility: data.visibility,
 
           weather: data.weather[0].main,
+
           description:
             data.weather[0].description,
 
@@ -137,18 +159,19 @@ export async function GET() {
       (a, b) =>
         b.comfortScore - a.comfortScore
     );
+
     const rankedResults = results.map(
       (city, index) => ({
         ...city,
         rank: index + 1,
       })
     );
+
     setCache(
       processedCacheKey,
       rankedResults,
       CACHE_TTL.PROCESSED_OUTPUT
     );
-
 
     return NextResponse.json(
       rankedResults,

@@ -4,78 +4,74 @@ import { useState } from "react";
 
 export default function AddCity({ onCityAdded }) {
   const [query, setQuery] = useState("");
-  const [city, setCity] = useState(null);
+const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   const searchCity = async () => {
-    if (!query.trim()) return;
+  if (!query.trim()) return;
 
-    setLoading(true);
-    setMessage("");
-    setCity(null);
+  setLoading(true);
+  setMessage("");
+  setCities([]);
 
-    try {
-      const response = await fetch(
-        `/api/city-search?city=${encodeURIComponent(query)}`
-      );
+  try {
+    const response = await fetch(
+      `/api/city-search?city=${encodeURIComponent(query)}`
+    );
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        setMessage(data.error || "City not found");
-        return;
-      }
-
-      // Show only the first / most relevant result
-      if (Array.isArray(data) && data.length > 0) {
-        setCity(data[0]);
-      } else {
-        setMessage("City not found");
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage("Failed to search city");
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      setMessage(data.error || "City not found");
+      return;
     }
-  };
 
-  const addCity = async () => {
-    if (!city) return;
-
-    try {
-      const response = await fetch("/api/cities", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(city),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setMessage(data.error || "Failed to add city");
-        return;
-      }
-
-      setMessage(`${city.CityName} added successfully`);
-
-      // Clear search result
-      setCity(null);
-      setQuery("");
-
-      // Refresh dashboard
-      if (onCityAdded) {
-        await onCityAdded();
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage("Failed to add city");
+    if (Array.isArray(data) && data.length > 0) {
+      setCities(data);
+    } else {
+      setMessage("City not found");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    setMessage("Failed to search city");
+  } finally {
+    setLoading(false);
+  }
+};
+  const addCity = async (selectedCity) => {
+  if (!selectedCity) return;
 
+  try {
+    const response = await fetch("/api/cities", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(selectedCity),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setMessage(data.error || "Failed to add city");
+      return;
+    }
+
+    setMessage(
+      `${selectedCity.CityName} added successfully`
+    );
+
+    setCities([]);
+
+    if (onCityAdded) {
+      await onCityAdded();
+    }
+  } catch (error) {
+    console.error(error);
+    setMessage("Failed to add city");
+  }
+};
   const cancelSearch = () => {
     setCity(null);
     setQuery("");
@@ -125,40 +121,42 @@ export default function AddCity({ onCityAdded }) {
         </p>
       )}
 
-      {/* Single Search Result */}
-      {city && (
-        <div className="mt-4 rounded-xl border border-slate-300 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white">
-                {city.CityName}
-              </h3>
+  {cities.length > 0 && (
+  <div className="mt-4 space-y-3">
+    {cities.map((city, index) => (
+      <div
+        key={`${city.CityCode}-${city.Latitude}-${city.Longitude}-${index}`}
+        className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          
+          <div>
+            <h3 className="font-semibold text-slate-900 dark:text-white">
+              {city.CityName}
+            </h3>
 
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {city.Country} · {city.Temp}°C · {city.Status}
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={addCity}
-                className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition hover:bg-green-700"
-              >
-                Add City
-              </button>
-
-              <button
-                type="button"
-                onClick={cancelSearch}
-                className="rounded-lg bg-slate-200 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-300 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
-              >
-                Cancel
-              </button>
-            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {city.Country}
+              {city.State ? ` · ${city.State}` : ""}
+              {" · "}
+              {city.Temp}°C
+              {" · "}
+              {city.Status}
+            </p>
           </div>
+
+          <button
+            type="button"
+            onClick={() => addCity(city)}
+            className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition hover:bg-green-700"
+          >
+            Add City
+          </button>
         </div>
-      )}
+      </div>
+    ))}
+  </div>
+)}
     </div>
   );
 }
