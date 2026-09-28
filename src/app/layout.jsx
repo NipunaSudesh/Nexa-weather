@@ -3,7 +3,7 @@ import { ThemeProvider } from "@/Context/ThemeContext";
 import { StateContextProvider } from "@/Context";
 
 export const metadata = {
-  title: "Fidenz Weather",
+  title: "Nexa Weather",
   description: "Weather application",
 };
 
