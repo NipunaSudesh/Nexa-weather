@@ -1,19 +1,61 @@
- {"List":[{"CityCode":"1248991","CityName":"Colombo","Temp":"33.0","Status":"Clouds"},{"CityCode":"1850147","CityName":"Tokyo","Temp":"8.6","Status":"Clear"},{"CityCode":"2644210","CityName":"Liverpool","Temp":"16.5","Status":"Rain"},{"CityCode":"2988507","CityName":"Paris","Temp":"22.4","Status":"Clear"},{"CityCode":"2147714","CityName":"Sydney","Temp":"27.3","Status":"Rain"},{"CityCode":"4930956","CityName":"Boston","Temp":"4.2","Status":"Mist"},{"CityCode":"1796236","CityName":"Shanghai","Temp":"10.1","Status":"Clouds"},{"CityCode":"3143244","CityName":"Oslo","Temp":"-3.9","Status":"Clear"},{
-      "CityCode": "5128581",
-      "CityName": "New York",
-      "Temp": "20.0",
-      "Status": "Clear"
-    },
-
+{
+  "List": [
     {
-      "CityCode": "1880252",
-      "CityName": "Singapore",
-      "Temp": "29.0",
+      "CityCode": "3461941",
+      "CityName": "Guaporé",
+      "Temp": "16.7",
       "Status": "Rain"
     },
     {
-      "CityCode": "3413829",
-      "CityName": "Reykjavik",
-      "Temp": "8.0",
+      "CityCode": "1861060",
+      "CityName": "Japan",
+      "Temp": "24.3",
       "Status": "Clouds"
-    }]}
+    },
+    {
+      "CityCode": "1248991",
+      "CityName": "Colombo",
+      "Temp": "28.2",
+      "Status": "Rain"
+    },
+    {
+      "CityCode": "1273294",
+      "CityName": "Delhi",
+      "Temp": "27.9",
+      "Status": "Clouds"
+    },
+    {
+      "CityCode": "2643743",
+      "CityName": "London",
+      "Temp": "17.7",
+      "Status": "Clouds"
+    },
+    {
+      "CityCode": "7.253201_80.345413",
+      "CityName": "Kegalle",
+      "Country": "LK",
+      "Temp": "27.4",
+      "Status": "Rain",
+      "Latitude": 7.2532006,
+      "Longitude": 80.3454132
+    },
+    {
+      "CityCode": "7.252311_80.446804",
+      "CityName": "Mawanella",
+      "Country": "LK",
+      "Temp": "27.2",
+      "Status": "Clouds",
+      "Latitude": 7.2523113,
+      "Longitude": 80.4468038
+    },
+    {
+      "CityCode": "7.293121_80.635036",
+      "CityName": "Kandy",
+      "Country": "LK",
+      "Temp": "25.4",
+      "Status": "Rain",
+      "Latitude": 7.2931208,
+      "Longitude": 80.6350358
+    }
+  ]
+}
