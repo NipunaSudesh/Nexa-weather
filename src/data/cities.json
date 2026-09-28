@@ -17,6 +17,12 @@
       "CityName": "Colombo",
       "Temp": "28.6",
       "Status": "Clouds"
+    },
+    {
+      "CityCode": "1242571",
+      "CityName": "Kadugannawa",
+      "Temp": "28.1",
+      "Status": "Rain"
     }
   ]
 }

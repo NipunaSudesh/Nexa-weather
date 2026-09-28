@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function AddCity({ onCityAdded }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const [city, setCity] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -13,7 +13,7 @@ export default function AddCity({ onCityAdded }) {
 
     setLoading(true);
     setMessage("");
-    setResults([]);
+    setCity(null);
 
     try {
       const response = await fetch(
@@ -27,15 +27,23 @@ export default function AddCity({ onCityAdded }) {
         return;
       }
 
-      setResults(data);
+      // Show only the first / most relevant result
+      if (Array.isArray(data) && data.length > 0) {
+        setCity(data[0]);
+      } else {
+        setMessage("City not found");
+      }
     } catch (error) {
+      console.error(error);
       setMessage("Failed to search city");
     } finally {
       setLoading(false);
     }
   };
 
-  const addCity = async (city) => {
+  const addCity = async () => {
+    if (!city) return;
+
     try {
       const response = await fetch("/api/cities", {
         method: "POST",
@@ -54,76 +62,101 @@ export default function AddCity({ onCityAdded }) {
 
       setMessage(`${city.CityName} added successfully`);
 
-      // Remove from search results
-      setResults((prev) =>
-        prev.filter((item) => item.CityCode !== city.CityCode)
-      );
+      // Clear search result
+      setCity(null);
+      setQuery("");
 
       // Refresh dashboard
       if (onCityAdded) {
-        onCityAdded();
+        await onCityAdded();
       }
     } catch (error) {
+      console.error(error);
       setMessage("Failed to add city");
     }
   };
 
+  const cancelSearch = () => {
+    setCity(null);
+    setQuery("");
+    setMessage("");
+  };
+
   return (
-    <div className="w-full max-w-3xl mx-auto mb-6">
+    <div className="mx-auto mb-6 w-full max-w-3xl">
+      {/* Search */}
       <div className="flex gap-2">
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setMessage("");
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               searchCity();
             }
           }}
           placeholder="Search for a city..."
-          className="flex-1 rounded-lg border px-4 py-3"
+          className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
         />
 
         <button
+          type="button"
           onClick={searchCity}
-          disabled={loading}
-          className="rounded-lg bg-blue-600 px-5 py-3 text-white"
+          disabled={loading || !query.trim()}
+          className="rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "Searching..." : "Search"}
         </button>
       </div>
 
+      {/* Message */}
       {message && (
-        <p className="mt-3 text-sm text-red-500">
+        <p
+          className={`mt-3 text-sm ${
+            message.includes("successfully")
+              ? "text-green-600"
+              : "text-red-500"
+          }`}
+        >
           {message}
         </p>
       )}
 
-      {results.length > 0 && (
-        <div className="mt-4 space-y-3">
-          {results.map((city) => (
-            <div
-              key={city.CityCode}
-              className="flex items-center justify-between rounded-xl border p-4"
-            >
-              <div>
-                <h3 className="font-semibold">
-                  {city.CityName}
-                </h3>
+      {/* Single Search Result */}
+      {city && (
+        <div className="mt-4 rounded-xl border border-slate-300 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">
+                {city.CityName}
+              </h3>
 
-                <p className="text-sm text-gray-500">
-                  {city.Country} · {city.Temp}°C · {city.Status}
-                </p>
-              </div>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {city.Country} · {city.Temp}°C · {city.Status}
+              </p>
+            </div>
 
+            <div className="flex gap-2">
               <button
-                onClick={() => addCity(city)}
-                className="rounded-lg bg-green-600 px-4 py-2 text-white"
+                type="button"
+                onClick={addCity}
+                className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition hover:bg-green-700"
               >
                 Add City
               </button>
+
+              <button
+                type="button"
+                onClick={cancelSearch}
+                className="rounded-lg bg-slate-200 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-300 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+              >
+                Cancel
+              </button>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>
