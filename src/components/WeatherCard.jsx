@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-export default function WeatherCard({ city }) {
+export default function WeatherCard({ city , onRemove}) {
   const getWeatherImage = () => {
     const weather = city.weather?.toLowerCase();
     const description = city.description?.toLowerCase();
@@ -121,6 +121,18 @@ export default function WeatherCard({ city }) {
         <span className="text-xs opacity-90">Wind Speed: </span>
       <span className="font-semibold"> {city.windSpeed} m/s</span>
     </p>
+
+  <button
+    type="button"
+    onClick={() =>
+      onRemove?.(
+        String(city.cityCode)
+      )
+    }
+    className="col-span-2 rounded-lg bg-red-500 px-3 py-2 text-white transition hover:bg-red-600"
+  >
+    Remove
+  </button>
       </div>
     </div>
   );

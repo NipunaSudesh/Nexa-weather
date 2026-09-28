@@ -6,6 +6,7 @@ import WeatherCard from "@/components/WeatherCard";
 import { useEffect, useState } from "react";
 import Footer from "@/components/Footer";
 import TemperatureChart from "@/components/TemperatureChart";
+import AddCity from "@/components/AddCity";
 export default function Dashboard() {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,28 +17,58 @@ const [forecastLoading, setForecastLoading] = useState(false);
   const [sortBy, setSortBy] = useState("comfort");
   const [filter, setFilter] = useState("all");
 
-  const fetchWeatherData = async () => {
-    try {
-      const res = await fetch("/api/weather");
+const fetchWeatherData = async () => {
+  try {
+    setLoading(true);
+    setError("");
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch weather data");
-      }
+    const res = await fetch("/api/weather", {
+      cache: "no-store",
+    });
 
-      const data = await res.json();
-
-      setCities(data);
-      console.log("weather data:", data);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      throw new Error("Failed to fetch weather data");
     }
-  };
+
+    const data = await res.json();
+
+    setCities(data);
+  } catch (error) {
+    console.error(error);
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchWeatherData();
   }, []);
+
+  const removeCity = async (cityCode) => {
+  try {
+    const response = await fetch(
+      `/api/cities?cityCode=${encodeURIComponent(cityCode)}`,
+      {
+        method: "DELETE",
+        cache: "no-store",
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error);
+      return;
+    }
+
+    // Refresh immediately after successful delete
+    await fetchWeatherData();
+  } catch (error) {
+    console.error("Delete city error:", error);
+    alert("Failed to remove city");
+  }
+};
 const fetchForecast = async (cityCode) => {
   if (!cityCode) return;
 
@@ -162,6 +193,8 @@ const fetchForecast = async (cityCode) => {
             across cities.
           </p>
         </div>
+
+        <AddCity onCityAdded={fetchWeatherData} />
 {/* Temperature Trend */}
 <div className="mb-8 rounded-xl border border-slate-300 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
@@ -360,6 +393,7 @@ const fetchForecast = async (cityCode) => {
               <WeatherCard
                 key={city.cityCode}
                 city={city}
+                 onRemove={removeCity}
               />
             ))}
           </div>
